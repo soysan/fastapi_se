@@ -1,0 +1,40 @@
+services:
+  app:
+    container_name: pos_app
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+    ports:
+      - 7070:7070
+    command: "uvicorn src.main:app --host 0.0.0.0 --port 7070 --reload"
+    restart: always
+    networks:
+      - pos_network
+    tty: true
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: pos_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --locale=C'
+      TZ: 'Asia/Tokyo'
+    ports:
+      - 5432:5432
+    networks:
+      - pos_network
+
+networks:
+  pos_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
